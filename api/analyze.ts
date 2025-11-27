@@ -63,6 +63,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       9. Accessories (Additions)
       10. Expression (Facial adjustments)
 
+      NEW FEATURES TO INCLUDE:
+
+      4. Facial Feature Analysis (Non-medical):
+      - Texture (e.g., "skin texture appears uneven")
+      - Forehead (e.g., "forehead has shiny areas")
+      - Eyes (e.g., "under-eye area looks darker")
+      - Cheeks (e.g., "cheek redness detected")
+      
+      5. Emotional & Social Perception:
+      - Expression (e.g., "Expression reads slightly tired")
+      - Confidence (e.g., "Confidence level: medium")
+      - Approachability (e.g., "Approachability high")
+      - Mood (e.g., "calm / neutral / stressed / cheerful")
+
+      6. Aesthetic Enhancements Simulator (Textual suggestions):
+      - Ideal lighting setup for this face shape
+      - Best angles for profile shots
+      - Glasses styles that complement this face
+      - Hairstyles that match forehead shape / jaw line
+      - Beard or no-beard recommendations (for male subjects)
+
+      7. Skin Wellness Advisor (Non-medical, gentle advice):
+      - Observations (non-medical)
+      - Lifestyle Factors (sleep, hydration, stress)
+      - Gentle Home Care Ideas (safe herbs, masks, no chemicals)
+      - Natural Ingredients to Support Skin Health
+      - Professional Recommendation (soft: "If symptoms persist...")
+      * AVOID: Naming diseases, drug names, chemical treatments, strict dosages.
+
+      EXECUTIVE SUMMARY UPDATE:
+      Include specific pointers like "Reduce shadow under eyes", "Even out skin tone", "Reduce highlights on forehead", "Balance color temperature".
+
       Output Format: JSON.
     `;
 
@@ -119,9 +151,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             recaptureSuggestions: {
               type: SchemaType.ARRAY,
               items: { type: SchemaType.STRING }
+            },
+            facialFeatures: {
+              type: SchemaType.OBJECT,
+              properties: {
+                texture: { type: SchemaType.STRING },
+                forehead: { type: SchemaType.STRING },
+                eyes: { type: SchemaType.STRING },
+                cheeks: { type: SchemaType.STRING }
+              },
+              required: ["texture", "forehead", "eyes", "cheeks"]
+            },
+            emotionalAnalysis: {
+              type: SchemaType.OBJECT,
+              properties: {
+                expression: { type: SchemaType.STRING },
+                confidence: { type: SchemaType.STRING },
+                approachability: { type: SchemaType.STRING },
+                perceivedMood: { type: SchemaType.STRING }
+              },
+              required: ["expression", "confidence", "approachability", "perceivedMood"]
+            },
+            aestheticEnhancements: {
+              type: SchemaType.OBJECT,
+              properties: {
+                lighting: { type: SchemaType.STRING },
+                angles: { type: SchemaType.STRING },
+                glasses: { type: SchemaType.STRING },
+                hairstyles: { type: SchemaType.STRING },
+                grooming: { type: SchemaType.STRING }
+              },
+              required: ["lighting", "angles", "glasses", "hairstyles", "grooming"]
+            },
+            skinWellness: {
+              type: SchemaType.OBJECT,
+              properties: {
+                observations: { type: SchemaType.STRING },
+                lifestyleFactors: { type: SchemaType.STRING },
+                homeCare: { type: SchemaType.STRING },
+                naturalIngredients: { type: SchemaType.STRING },
+                professionalRecommendation: { type: SchemaType.STRING }
+              },
+              required: ["observations", "lifestyleFactors", "homeCare", "naturalIngredients", "professionalRecommendation"]
             }
           },
-          required: ["summary", "details", "suggestions", "recaptureSuggestions"]
+          required: ["summary", "details", "suggestions", "recaptureSuggestions", "facialFeatures", "emotionalAnalysis", "aestheticEnhancements", "skinWellness"]
         }
       }
     });
