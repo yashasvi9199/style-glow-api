@@ -7,9 +7,26 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const origin = req.headers.origin || '';
+  const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1') || origin.startsWith('capacitor://');
+  const allowedDomain = process.env.PRIMARY_DOMAIN || '';
+  const allowLocalhost = process.env.LOCALHOST === 'true';
+
+  // Check if origin is allowed
+  const isAllowed = 
+    (allowLocalhost && isLocalhost) || 
+    (allowedDomain && origin.includes(allowedDomain));
+
+  if (!isAllowed) {
+    return res.status(403).json({ 
+      error: 'Access Forbidden', 
+      message: 'This API is restricted to authorized domains only.' 
+    });
+  }
+
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', "true");
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', origin); // Reflect origin for allowed domains
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
