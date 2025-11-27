@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleGenAI, SchemaType } from '@google/genai';
+import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS Headers
@@ -66,15 +66,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       Output Format: JSON.
     `;
 
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: {
-        parts: [
-          { inlineData: { mimeType: 'image/jpeg', data: base64Data } },
-          { text: prompt }
-        ]
-      },
-      config: {
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.0-flash-exp',
+      generationConfig: {
         responseMimeType: "application/json",
         responseSchema: {
           type: SchemaType.OBJECT,
@@ -132,10 +126,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     });
 
-    const jsonText = response.text || "{}";
-    const result = JSON.parse(jsonText);
+    const response = await model.generateContent([
+      { inlineData: { mimeType: 'image/jpeg', data: base64Data } },
+      prompt
+    ]);
+
+    const result = response.response;
+    const jsonText = result.text();
+    const parsedResult = JSON.parse(jsonText);
     
-    res.status(200).json(result);
+    res.status(200).json(parsedResult);
 
   } catch (error) {
     console.error("API Error:", error);
