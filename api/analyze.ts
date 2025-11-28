@@ -73,26 +73,20 @@ Output: A single JSON object that MUST STRICTLY MATCH the existing schema keys. 
 -   The array MUST contain **EXACTLY 3** concise pointers.
 -   Format each pointer as a short Observation/Action pairing: "Observation = Action" (e.g., "Under-eye shadows = Soften by diffusing light") to maximize information density.
 
-**3. Detailed Analysis (Field 3 - 10 Categories):**
--   For EACH of the 10 category fields (General, Clothing, Pose, Background, Hair, Skin, Makeup, Lighting, Accessories, Expression), provide 1–2 highly specific, short sentences detailing the analysis.
+**3. Detailed Analysis (Field 3 - 8 Categories):**
+-   For EACH of the 8 category fields (General, Clothing, Pose, Background, Hair, Skin, Lighting, Expression), provide 1–2 highly specific, short sentences detailing the analysis.
 
 **4. Recapture (Field 4):**
 -   The array MUST contain **5 to 7** explicit, step-by-step tips for a complete beginner.
 -   Each tip must be a short, imperative instruction (e.g., "Hold camera slightly higher," "Lean slightly toward the light," "Take one small step away from the wall").
 
 **5. Emotional & Social Analysis (Field 5):**
--   For each field (Expression, Confidence, Approachability, Mood), provide 1–2 short, insightful sentences, detailing the assessment as a non-judgmental face reader.
+-   For each field (Expression, Confidence, Approachability, Mood), provide 1 short, insightful sentence, detailing the assessment as a face reader.
 
-**6. Facial & Body Analysis (Field 6):**
--   This output MUST be an array of up to 5 short bullets.
--   Each bullet MUST be prefixed by its category (Body:, Skin:, Face:, Color:, Other:) followed by a concise 6–12 word observation (e.g., "Skin: Visible uneven texture around T-zone," "Body: Shoulders slightly tense, indicating mild stress").
-
-**7. Wellness Advisor (Field 7):**
--   Based on observations from the physical analysis, generate safe, non-diagnostic home remedy advice (Hydration, Sleep, Natural Ingredients, Sun Protection, Mild Exercise).
--   **SAFETY MANDATE:** DO NOT name conditions, recommend dosages, or chemical treatments.
-
-**8. Mandatory Disclaimer:**
--   Ensure the 'disclaimerText' field contains the full legal boilerplate: "The content provided here is for informational and creative improvement purposes only and is not a substitute for professional medical advice, diagnosis, or treatment."
+**6. Wellness Advisor (Field 6):**
+-   Based on physical observations, suggest 3 practical home remedies using common household ingredients.
+-   Each remedy should be descriptive but concise (max 3 short sentences).
+-   Focus on natural preparations, simple routines, and gentle self-care practices.
 
 Output Format: STRICT JSON.
     `;
@@ -118,12 +112,10 @@ Output Format: STRICT JSON.
                 bkg: { type: SchemaType.STRING },
                 har: { type: SchemaType.STRING },
                 ski: { type: SchemaType.STRING },
-                mak: { type: SchemaType.STRING },
                 lig: { type: SchemaType.STRING },
-                acc: { type: SchemaType.STRING },
                 exp: { type: SchemaType.STRING }
               },
-              required: ["gen", "clo", "pos", "bkg", "har", "ski", "mak", "lig", "acc", "exp"]
+              required: ["gen", "clo", "pos", "bkg", "har", "ski", "lig", "exp"]
             },
             r: {
               type: SchemaType.ARRAY,
@@ -139,17 +131,20 @@ Output Format: STRICT JSON.
               },
               required: ["emo", "app", "conf", "mood"]
             },
-            bf: {
-              type: SchemaType.ARRAY,
-              items: { type: SchemaType.STRING }
-            },
             w: {
               type: SchemaType.ARRAY,
-              items: { type: SchemaType.STRING }
-            },
-            disc: { type: SchemaType.STRING }
+              items: { 
+                type: SchemaType.OBJECT,
+                properties: {
+                  title: { type: SchemaType.STRING },
+                  description: { type: SchemaType.STRING },
+                  ingredients: { type: SchemaType.STRING }
+                },
+                required: ["title", "description", "ingredients"]
+              }
+            }
           },
-          required: ["s", "g", "d", "r", "e", "bf", "w", "disc"]
+          required: ["s", "g", "d", "r", "e", "w"]
         }
       }
     });
