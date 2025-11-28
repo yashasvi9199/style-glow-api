@@ -226,6 +226,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const jsonText = result.text();
     const parsedResult = JSON.parse(jsonText);
     
+    // Add token usage to the response
+    if (result.usageMetadata) {
+      parsedResult.tokenUsage = {
+        promptTokens: result.usageMetadata.promptTokenCount,
+        responseTokens: result.usageMetadata.candidatesTokenCount,
+        totalTokens: result.usageMetadata.totalTokenCount
+      };
+    }
+
     res.status(200).json(parsedResult);
 
   } catch (error) {
