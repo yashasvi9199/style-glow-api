@@ -46,6 +46,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'No file provided' });
     }
 
+    console.log('Received tags:', tags);
+    console.log('Received context:', context);
+
     // Extract both IPv4 and IPv6
     const forwardedFor = Array.isArray(req.headers['x-forwarded-for']) 
       ? req.headers['x-forwarded-for'][0] 
@@ -53,32 +56,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     const ips = forwardedFor?.split(',').map(ip => ip.trim()) || ['unknown'];
     
-    // Separate IPv4 and IPv6
-    const ipv4 = ips.find(ip => /^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) || 'none';
-    const ipv6 = ips.find(ip => /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/.test(ip)) || 'none';
+    // Separate IPv4 and IPv6 - simplified without regex
+    const ipv4 = ips.find(ip => ip.includes('.') && !ip.includes(':')) || 'none';
+    const ipv6 = ips.find(ip => ip.includes(':')) || 'none';
     
-    // Strict sanitization - only alphanumeric, dots, colons, underscores
-    const strictSanitize = (str: string) => str.replace(/[^a-zA-Z0-9.:_]/g, '_');
+    // Simple sanitization - remove all slashes and special chars
+    const cleanString = (str: string) => {
+      return str.split('/').join('_').split('\\').join('_').split('|').join('_').split('=').join('_');
+    };
 
     // Sanitize and append IPs to tags and context
     let updatedTags = tags || '';
     let updatedContext = context || '';
     
     if (ipv4 !== 'none') {
-      const cleanIpv4 = strictSanitize(ipv4);
+      const cleanIpv4 = cleanString(ipv4);
       updatedTags += `,ipv4:${cleanIpv4}`;
       updatedContext += `|ipv4=${cleanIpv4}`;
     }
     
     if (ipv6 !== 'none') {
-      const cleanIpv6 = strictSanitize(ipv6);
+      const cleanIpv6 = cleanString(ipv6);
       updatedTags += `,ipv6:${cleanIpv6}`;
       updatedContext += `|ipv6=${cleanIpv6}`;
     }
 
-    // Apply strict sanitization to entire strings
-    updatedTags = strictSanitize(updatedTags);
-    updatedContext = strictSanitize(updatedContext);
+    // Apply sanitization to entire strings
+    updatedTags = cleanString(updatedTags);
+    updatedContext = cleanString(updatedContext);
+
+    console.log('Sanitized tags:', updatedTags);
+    console.log('Sanitized context:', updatedContext);
 
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
