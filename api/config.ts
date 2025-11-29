@@ -42,10 +42,29 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const ip = (Array.isArray(req.headers['x-forwarded-for']) 
     ? req.headers['x-forwarded-for'][0] 
     : req.headers['x-forwarded-for'])?.split(',')[0] || 'unknown';
+  
+  const userAgent = req.headers['user-agent'] || 'unknown';
+  const language = req.headers['accept-language']?.split(',')[0] || 'unknown';
+  
+  // Extract browser name from user-agent
+  let browserName = 'unknown';
+  if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) browserName = 'Chrome';
+  else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) browserName = 'Safari';
+  else if (userAgent.includes('Firefox')) browserName = 'Firefox';
+  else if (userAgent.includes('Edg')) browserName = 'Edge';
+  else if (userAgent.includes('OPR') || userAgent.includes('Opera')) browserName = 'Opera';
+  
+  // Generate anonymous ID from IP + UA
+  const crypto = require('crypto');
+  const anonID = crypto.createHash('sha256').update(ip + userAgent).digest('hex').substring(0, 16);
 
   res.status(200).json({
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
     uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET,
-    clientIp: ip
+    clientIp: ip,
+    anonID,
+    userAgent,
+    language,
+    browserName
   });
 }
