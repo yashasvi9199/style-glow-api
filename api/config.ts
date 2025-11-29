@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin || '';
   const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1') || origin.startsWith('capacitor://');
   const allowedDomain = process.env.PRIMARY_DOMAIN || '';
@@ -35,17 +35,57 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  if (req.method !== 'GET') {
+  if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const ip = (Array.isArray(req.headers['x-forwarded-for']) 
-    ? req.headers['x-forwarded-for'][0] 
-    : req.headers['x-forwarded-for'])?.split(',')[0] || 'unknown';
+  try {
+    const { file, tags, context } = req.body;
 
-  res.status(200).json({
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-    uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET,
-    clientIp: ip
-  });
+    if (!file) {
+      return res.status(400).json({ error: 'No file provided' });
+    }
+
+    const ip = (Array.isArray(req.headers['x-forwarded-for']) 
+      ? req.headers['x-forwarded-for'][0] 
+      : req.headers['x-forwarded-for'])?.split(',')[0] || 'unknown';
+
+    // Append IP to tags and context
+    const updatedTags = tags ? `${tags},ip:${ip}` : `ip:${ip}`;
+    const updatedContext = context ? `${context}|ip=${ip}` : `ip=${ip}`;
+
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+      console.error('Cloudinary configuration missing on server');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    
+    const formData = new URLSearchParams();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('tags', updatedTags);
+    formData.append('context', updatedContext);
+
+    const cloudinaryResponse = await fetch(cloudinaryUrl, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!cloudinaryResponse.ok) {
+      const errorData = await cloudinaryResponse.json();
+      console.error('Cloudinary upload failed:', errorData);
+      return res.status(cloudinaryResponse.status).json({ error: 'Upload failed', details: errorData });
+    }
+
+    const data = await cloudinaryResponse.json();
+    res.status(200).json(data);
+
+  } catch (error) {
+    console.error('Server upload error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 }
