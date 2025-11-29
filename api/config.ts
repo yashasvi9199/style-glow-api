@@ -39,8 +39,13 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
+  const ip = (Array.isArray(req.headers['x-forwarded-for']) 
+    ? req.headers['x-forwarded-for'][0] 
+    : req.headers['x-forwarded-for'])?.split(',')[0] || 'unknown';
+
   res.status(200).json({
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-    uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET
+    uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET,
+    clientIp: ip
   });
 }
