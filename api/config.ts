@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', "true");
   res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
@@ -46,20 +46,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'No file provided' });
     }
 
-    const rawIp = (Array.isArray(req.headers['x-forwarded-for']) 
+    // Extract both IPv4 and IPv6
+    const forwardedFor = Array.isArray(req.headers['x-forwarded-for']) 
       ? req.headers['x-forwarded-for'][0] 
-      : req.headers['x-forwarded-for'])?.split(',')[0] || 'unknown';
+      : req.headers['x-forwarded-for'];
     
-    // Sanitize IP to remove slashes or other invalid chars
-    const ip = rawIp.replace(/[^a-zA-Z0-9.:]/g, '_');
+    const ips = forwardedFor?.split(',').map(ip => ip.trim()) || ['unknown'];
+    
+    // Separate IPv4 and IPv6
+    const ipv4 = ips.find(ip => /^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) || 'none';
+    const ipv6 = ips.find(ip => /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/.test(ip)) || 'none';
+    
+    // Strict sanitization - only alphanumeric, dots, colons, underscores
+    const strictSanitize = (str: string) => str.replace(/[^a-zA-Z0-9.:_]/g, '_');
 
-    // Append IP to tags and context
-    let updatedTags = tags ? `${tags},ip:${ip}` : `ip:${ip}`;
-    let updatedContext = context ? `${context}|ip=${ip}` : `ip=${ip}`;
+    // Sanitize and append IPs to tags and context
+    let updatedTags = tags || '';
+    let updatedContext = context || '';
+    
+    if (ipv4 !== 'none') {
+      const cleanIpv4 = strictSanitize(ipv4);
+      updatedTags += `,ipv4:${cleanIpv4}`;
+      updatedContext += `|ipv4=${cleanIpv4}`;
+    }
+    
+    if (ipv6 !== 'none') {
+      const cleanIpv6 = strictSanitize(ipv6);
+      updatedTags += `,ipv6:${cleanIpv6}`;
+      updatedContext += `|ipv6=${cleanIpv6}`;
+    }
 
-    // STRICT SANITIZATION: Remove ALL slashes from tags and context
-    updatedTags = updatedTags.replace(/\//g, '_');
-    updatedContext = updatedContext.replace(/\//g, '_');
+    // Apply strict sanitization to entire strings
+    updatedTags = strictSanitize(updatedTags);
+    updatedContext = strictSanitize(updatedContext);
 
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
@@ -88,8 +107,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(cloudinaryResponse.status).json({ error: 'Upload failed', details: errorData });
     }
 
-    const data = await cloudinaryResponse.json();
-    res.status(200).json(data);
+    const data: any = await cloudinaryResponse.json();
+    
+    // Add public_id to response
+    res.status(200).json({
+      ...data,
+      metadata: {
+        ipv4,
+        ipv6,
+        public_id: data.public_id
+      }
+    });
 
   } catch (error) {
     console.error('Server upload error:', error);
