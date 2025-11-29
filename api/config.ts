@@ -102,7 +102,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     formData.append('file', file);
     formData.append('upload_preset', uploadPreset);
     formData.append('tags', updatedTags);
-    formData.append('context', updatedContext);
+    // NOT sending context - it causes slash errors
+
+    console.log('FormData being sent to Cloudinary:', Object.fromEntries(formData.entries()));
 
     const cloudinaryResponse = await fetch(cloudinaryUrl, {
       method: 'POST',
@@ -117,13 +119,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const data: any = await cloudinaryResponse.json();
     
-    // Add public_id to response
     res.status(200).json({
       ...data,
       metadata: {
         ipv4,
         ipv6,
-        public_id: data.public_id
+        public_id: data.public_id,
+        tags: updatedTags
       }
     });
 
