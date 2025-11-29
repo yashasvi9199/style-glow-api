@@ -46,13 +46,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'No file provided' });
     }
 
-    const ip = (Array.isArray(req.headers['x-forwarded-for']) 
+    const rawIp = (Array.isArray(req.headers['x-forwarded-for']) 
       ? req.headers['x-forwarded-for'][0] 
       : req.headers['x-forwarded-for'])?.split(',')[0] || 'unknown';
+    
+    // Sanitize IP to remove slashes or other invalid chars
+    const ip = rawIp.replace(/[^a-zA-Z0-9.:]/g, '_');
 
     // Append IP to tags and context
-    const updatedTags = tags ? `${tags},ip:${ip}` : `ip:${ip}`;
-    const updatedContext = context ? `${context}|ip=${ip}` : `ip=${ip}`;
+    let updatedTags = tags ? `${tags},ip:${ip}` : `ip:${ip}`;
+    let updatedContext = context ? `${context}|ip=${ip}` : `ip=${ip}`;
+
+    // STRICT SANITIZATION: Remove ALL slashes from tags and context
+    updatedTags = updatedTags.replace(/\//g, '_');
+    updatedContext = updatedContext.replace(/\//g, '_');
 
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
