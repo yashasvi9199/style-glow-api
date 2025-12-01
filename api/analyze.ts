@@ -51,45 +51,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const base64Data = image.split(',')[1] || image;
 
-    const prompt = `
-      You are a Highly Calibrated Expert Analyst: an award-winning photographer, a professional fashion stylist, and a non-diagnostic skin wellness advisor.
-Input: A single image.
-Output: A single JSON object that MUST STRICTLY MATCH the existing schema keys. Return JSON ONLY. No preamble, no explanation, no markdown (e.g., \`\`\`json).
+    const prompt = `You are an expert fashion photographer, stylist, and wellness advisor. Analyze this image and return STRICT JSON only (no markdown, no preamble).
 
----
-### I. GLOBAL TOKEN EFFICIENCY & STYLE MANDATE
+STYLE RULES:
+• Write 1-2 concise sentences per field (4-12 words each)
+• Be specific, actionable, technical - avoid vague terms like "nice" or "good"
+• No repetition between fields
 
-1.  SENTENCE BREVITY: For ALL string fields, use **1–2 concise, information-dense sentences only**. Sentences must be short (4–12 words). DO NOT write paragraphs longer than two sentences.
-2.  CONCRETE LANGUAGE: Avoid vague or flowery language (e.g., "nice," "good"). Use actionable verbs and specific technical, emotional, or physical descriptors (e.g., "Soften contrast," "Slight tension in jaw," "Diffuse light source").
-3.  CONTENT SEPARATION: Avoid repeating the same observation across different fields. Keep points strictly within the most relevant category.
+JSON STRUCTURE:
+{
+  "s": "Summary - Brief positive analysis combining top 2-3 visual aspects (1 sentence, ~20 words)",
+  "g": ["Suggestion 1", "Suggestion 2", "Suggestion 3"] - Format as "Observation = Action" (e.g., "Under-eye shadows = Soften with diffused light"),
+  "d": {
+    "gen": "General - Overall composition & framing insights",
+    "clo": "Clothing - Style, fit, color, coordination analysis",
+    "pos": "Pose - Body positioning, angles, posture assessment",
+    "bkg": "Background - Setting, clutter, depth, context review",
+    "har": "Hair - Style, grooming, texture, color evaluation",
+    "ski": "Skin - Tone analysis, visible care needs (non-diagnostic)",
+    "lig": "Lighting - Direction, quality, shadows, highlights critique",
+    "exp": "Expression - Facial emotion, eye contact, authenticity"
+  },
+  "r": ["Tip 1", "Tip 2", ...] - 5-7 beginner-friendly recapture instructions. Use short imperatives (e.g., "Hold camera slightly higher", "Step back from wall"),
+  "e": {
+    "emo": "Expression - Emotional reading as face analyst",
+    "app": "Approachability - Social warmth perception",
+    "conf": "low" | "medium" | "high" - Confidence assessment,
+    "mood": "Mood - Perceived emotional state"
+  },
+  "w": [
+    {"title": "Remedy Name", "description": "2-3 sentence natural remedy", "ingredients": "Simple household items"},
+    ... 4 total remedies
+  ]
+}
 
----
-### II. FIELD-SPECIFIC CONSTRAINTS & RICHNESS
+Provide rich, insightful content in each field while keeping sentences short and actionable.`;
 
-**1. Summary (Field 1):**
--   Provide a brief, positive analysis (1 sentence, max ~25 words) that combines the top 2-3 strongest visual aspects.
 
-**2. General Suggestions (Field 2):**
--   The array MUST contain **EXACTLY 3** concise pointers.
--   Format each pointer as a short Observation/Action pairing: "Observation = Action" (e.g., "Under-eye shadows = Soften by diffusing light") to maximize information density.
-
-**3. Detailed Analysis (Field 3 - 8 Categories):**
--   For EACH of the 8 category fields (General, Clothing, Pose, Background, Hair, Skin, Lighting, Expression), provide 1–2 highly specific, short sentences detailing the analysis.
-
-**4. Recapture (Field 4):**
--   The array MUST contain **5 to 7** explicit, step-by-step tips for a complete beginner.
--   Each tip must be a short, imperative instruction (e.g., "Hold camera slightly higher," "Lean slightly toward the light," "Take one small step away from the wall").
-
-**5. Emotional & Social Analysis (Field 5):**
--   For each field (Expression, Confidence, Approachability, Mood), provide 1 short, insightful sentence, detailing the assessment as a face reader.
-
-**6. Wellness Advisor (Field 6):**
--   Based on physical observations, suggest 4 practical home remedies.
--   Each remedy should be descriptive but concise (max 3 short sentences).
--   Focus on natural preparations, simple routines, and gentle self-care practices.
-
-Output Format: STRICT JSON.
-    `;
 
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-2.0-flash',
