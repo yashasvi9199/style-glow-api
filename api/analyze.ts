@@ -43,13 +43,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { image } = req.body;
+
+    const { image, remedyCategory = 0 } = req.body;
 
     if (!image) {
       return res.status(400).json({ error: 'Image data is required' });
     }
 
     const base64Data = image.split(',')[1] || image;
+    
+    // Define 6 distinct categories to ensure variety across sessions
+    const categories = [
+      {
+        name: "ANCIENT AYURVEDA",
+        ingredients: "turmeric, neem, sandalwood, tulsi, ashwagandha, triphala, brahmi, bhringraj, shikakai, reetha, multani mitti",
+        focus: "Traditional healing, roots, herbs, and earth-based treatments."
+      },
+      {
+        name: "KITCHEN ESSENTIALS",
+        ingredients: "besan (gram flour), yogurt (curd), raw milk, honey, lemon, tomato, potato, cucumber, rice water, ghee",
+        focus: "Simple, effective remedies using common edible ingredients found in every Indian kitchen."
+      },
+      {
+        name: "FRUIT & FLORAL",
+        ingredients: "rose water, papaya, orange peel, pomegranate, banana, hibiscus, jasmine, marigold, aloe vera",
+        focus: "Fresh, aromatic treatments using fruits and flowers for glow and hydration."
+      },
+      {
+        name: "SPICE & WARMTH",
+        ingredients: "saffron (kesar), cinnamon, clove, cardamom, fenugreek (methi), ginger, black pepper, mustard oil",
+        focus: "Stimulating remedies using warming spices to boost circulation and detoxify."
+      },
+      {
+        name: "OILS & NUTS",
+        ingredients: "coconut oil, almond oil, sesame oil, castor oil, walnut, soaked almonds, cashew paste",
+        focus: "Deep nourishment and moisturizing treatments using natural oils and nuts."
+      },
+      {
+        name: "DETOX & PURIFY",
+        ingredients: "mint (pudina), coriander, curry leaves, green tea, salt, baking soda (minimal), clay, charcoal",
+        focus: "Cleansing and purifying remedies to remove toxins and refresh."
+      }
+    ];
+
+    // Select category based on index (modulo 6 to be safe)
+    const selectedCategory = categories[remedyCategory % categories.length];
 
     const prompt = `You are an expert fashion photographer, stylist, and wellness advisor. Analyze this image and return STRICT JSON only (no markdown, no preamble).
 
@@ -81,22 +119,30 @@ JSON STRUCTURE:
   },
   "w": [
     {"title": "Remedy Name", "description": "2-3 sentence natural remedy", "ingredients": "Simple household items"},
-    ... 4 UNIQUE remedies - Use DIVERSE Indian/Ayurvedic ingredients. Vary each remedy completely.
-    Examples: turmeric, neem, sandalwood, rose water, besan (gram flour), tulsi, amla, coconut oil, 
-    cucumber, tomato, papaya, yogurt, milk, rice water, mint, saffron, ghee, multani mitti, etc.
-    AVOID repeating common ingredients (lemon, honey, aloe vera, tea bags) unless specifically relevant.
+    ... 3 UNIQUE remedies using ONLY ingredients from the category below.
+    
+    CURRENT THEME: ${selectedCategory.name}
+    FOCUS: ${selectedCategory.focus}
+    PREFERRED INGREDIENTS: ${selectedCategory.ingredients}
+    
+    STRICT RULES:
+    1. Use ONLY ingredients relevant to the '${selectedCategory.name}' theme.
+    2. DO NOT use generic combinations like Honey+Lemon unless they fit the specific theme perfectly.
+    3. Ensure all 4 remedies are distinct from each other.
   ]
 }
 
 Provide rich, insightful content in each field while keeping sentences short and actionable.
 
-IMPORTANT: For wellness remedies (w), maximize variety and avoid generic combinations. Each remedy should use different primary ingredients.`;
+CRITICAL: Wellness remedies MUST have ZERO ingredient overlap. Be creative, imaginative, and avoid predictable combinations.`;
 
 
 
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-2.0-flash',
       generationConfig: {
+        temperature: 1.0, // Increase creativity and variety (0-2, default ~0.7)
+        topP: 0.95, // Increase diversity in token selection
         responseMimeType: "application/json",
         responseSchema: {
           type: SchemaType.OBJECT,
