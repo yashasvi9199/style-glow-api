@@ -84,7 +84,7 @@ Output: A single JSON object that MUST STRICTLY MATCH the existing schema keys. 
 -   For each field (Expression, Confidence, Approachability, Mood), provide 1 short, insightful sentence, detailing the assessment as a face reader.
 
 **6. Wellness Advisor (Field 6):**
--   Based on physical observations, suggest 3 practical home remedies using common household ingredients.
+-   Based on physical observations, suggest 4 practical home remedies.
 -   Each remedy should be descriptive but concise (max 3 short sentences).
 -   Focus on natural preparations, simple routines, and gentle self-care practices.
 
