@@ -43,100 +43,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-
-    const { image, remedyCategory = 0 } = req.body;
+    const { image, prompt } = req.body;
 
     if (!image) {
       return res.status(400).json({ error: 'Image data is required' });
     }
+    
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
 
     const base64Data = image.split(',')[1] || image;
     
-    // Define 6 distinct SKIN-FOCUSED categories to ensure variety
-    const categories = [
-      {
-        name: "GLOW & RADIANCE (Ayurvedic)",
-        ingredients: "turmeric (haldi), saffron (kesar), sandalwood (chandan), raw milk, rose water",
-        focus: "Boosting natural glow, brightening complexion, and traditional beautification."
-      },
-      {
-        name: "DEEP HYDRATION & NOURISHMENT",
-        ingredients: "coconut oil, almond oil, honey, glycerin, vitamin E, fresh cream (malai), banana",
-        focus: "Restoring moisture, repairing skin barrier, and softening texture."
-      },
-      {
-        name: "CLEAR SKIN & PURIFICATION",
-        ingredients: "neem, tulsi (holy basil), multani mitti (fuller's earth), aloe vera, mint (pudina)",
-        focus: "Fighting acne, reducing oiliness, unclogging pores, and antibacterial care."
-      },
-      {
-        name: "BRIGHTENING & TAN REMOVAL",
-        ingredients: "tomato pulp, potato juice, papaya, orange peel powder, lemon (diluted), curd (yogurt)",
-        focus: "Removing tan, fading dark spots, and evening out skin tone."
-      },
-      {
-        name: "EXFOLIATION & SMOOTHING",
-        ingredients: "besan (gram flour), rice flour, oatmeal, coffee grounds, sugar (fine), masoor dal powder",
-        focus: "Gentle scrubbing, removing dead skin cells, and polishing skin texture."
-      },
-      {
-        name: "SOOTHING & COOLING",
-        ingredients: "cucumber, rose water, aloe vera, watermelon, ice water, chamomile, green tea",
-        focus: "Calming irritation, reducing puffiness, and cooling sun-exposed skin."
-      }
-    ];
-
-    // Select category based on index (modulo 6 to be safe)
-    const selectedCategory = categories[remedyCategory % categories.length];
-
-    const prompt = `You are an expert fashion photographer, stylist, and wellness advisor. Analyze this image and return STRICT JSON only (no markdown, no preamble).
-
-STYLE RULES:
-• Write 1-2 concise sentences per field (4-12 words each)
-• Be specific, actionable, technical - avoid vague terms like "nice" or "good"
-• No repetition between fields
-
-JSON STRUCTURE:
-{
-  "s": "Summary - Brief positive analysis combining top 2-3 visual aspects (1 sentence, ~20 words)",
-  "g": ["Suggestion 1", "Suggestion 2", "Suggestion 3"] - Format as "Observation = Action" (e.g., "Under-eye shadows = Soften with diffused light"),
-  "d": {
-    "gen": "General - Overall composition & framing insights",
-    "clo": "Clothing - Style, fit, color, coordination analysis",
-    "pos": "Pose - Body positioning, angles, posture assessment",
-    "bkg": "Background - Setting, clutter, depth, context review",
-    "har": "Hair - Style, grooming, texture, color evaluation",
-    "ski": "Skin - Tone analysis, visible care needs (non-diagnostic)",
-    "lig": "Lighting - Direction, quality, shadows, highlights critique",
-    "exp": "Expression - Facial emotion, eye contact, authenticity"
-  },
-  "r": ["Tip 1", "Tip 2", ...] - 5-7 beginner-friendly recapture instructions. Use short imperatives (e.g., "Hold camera slightly higher", "Step back from wall"),
-  "e": {
-    "emo": "Expression - Emotional reading as face analyst",
-    "app": "Approachability - Social warmth perception",
-    "conf": "low" | "medium" | "high" - Confidence assessment,
-    "mood": "Mood - Perceived emotional state"
-  },
-  "w": [
-    {"title": "Remedy Name", "description": "2-3 sentence natural remedy", "ingredients": "Simple household items"},
-    ... 3 UNIQUE remedies using ONLY ingredients from the category below.
-    
-    CURRENT THEME: ${selectedCategory.name}
-    FOCUS: ${selectedCategory.focus}
-    PREFERRED INGREDIENTS: ${selectedCategory.ingredients}
-    
-    STRICT RULES:
-    1. **SKIN CARE ONLY**. Do NOT suggest remedies for hair, digestion, weight loss, or general health.
-    2. Use ONLY ingredients relevant to the '${selectedCategory.name}' theme.
-  ]
-}
-
-Provide rich, insightful content in each field while keeping sentences short and actionable.
-
-CRITICAL: Wellness remedies MUST have ZERO ingredient overlap. Be creative, imaginative, and avoid predictable combinations.`;
-
-
-
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-2.5-flash',
       generationConfig: {
