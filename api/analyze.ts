@@ -139,7 +139,7 @@ CRITICAL: Wellness remedies MUST have ZERO ingredient overlap. Be creative, imag
 
 
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       generationConfig: {
         temperature: 1.0, // Increase creativity and variety (0-2, default ~0.7)
         topP: 0.95, // Increase diversity in token selection
