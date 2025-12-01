@@ -43,7 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { image, prompt } = req.body;
+    const { image, prompt, model: modelName } = req.body;
 
     if (!image) {
       return res.status(400).json({ error: 'Image data is required' });
@@ -56,7 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const base64Data = image.split(',')[1] || image;
     
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.5-flash',
+      model: modelName || 'gemini-2.5-flash', // Use requested model or default
       generationConfig: {
         temperature: 1.0, // Increase creativity and variety (0-2, default ~0.7)
         topP: 0.95, // Increase diversity in token selection
