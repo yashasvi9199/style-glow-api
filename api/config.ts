@@ -9,6 +9,21 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const allowedDomain = process.env.PRIMARY_DOMAIN || '';
   const allowLocalhost = process.env.LOCALHOST === 'true';
 
+  // Set CORS Headers FIRST (before any checks)
+  res.setHeader('Access-Control-Allow-Credentials', "true");
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
+
+  // Handle OPTIONS preflight
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   // Check if origin is allowed
   const isAllowed = 
     (allowLocalhost && isLocalhost) || 
@@ -19,20 +34,6 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
       error: 'Access Forbidden', 
       message: 'This API is restricted to authorized domains only.' 
     });
-  }
-
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Credentials', "true");
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
   }
 
   if (req.method !== 'GET') {
