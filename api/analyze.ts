@@ -81,11 +81,16 @@ JSON STRUCTURE:
   },
   "w": [
     {"title": "Remedy Name", "description": "2-3 sentence natural remedy", "ingredients": "Simple household items"},
-    ... 4 total remedies
+    ... 4 UNIQUE remedies - Use DIVERSE Indian/Ayurvedic ingredients. Vary each remedy completely.
+    Examples: turmeric, neem, sandalwood, rose water, besan (gram flour), tulsi, amla, coconut oil, 
+    cucumber, tomato, papaya, yogurt, milk, rice water, mint, saffron, ghee, multani mitti, etc.
+    AVOID repeating common ingredients (lemon, honey, aloe vera, tea bags) unless specifically relevant.
   ]
 }
 
-Provide rich, insightful content in each field while keeping sentences short and actionable.`;
+Provide rich, insightful content in each field while keeping sentences short and actionable.
+
+IMPORTANT: For wellness remedies (w), maximize variety and avoid generic combinations. Each remedy should use different primary ingredients.`;
 
 
 
