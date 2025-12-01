@@ -52,37 +52,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const base64Data = image.split(',')[1] || image;
     
-    // Define 6 distinct categories to ensure variety across sessions
+    // Define 6 distinct SKIN-FOCUSED categories to ensure variety
     const categories = [
       {
-        name: "ANCIENT AYURVEDA",
-        ingredients: "turmeric, neem, sandalwood, tulsi, ashwagandha, triphala, brahmi, bhringraj, shikakai, reetha, multani mitti",
-        focus: "Traditional healing, roots, herbs, and earth-based treatments."
+        name: "GLOW & RADIANCE (Ayurvedic)",
+        ingredients: "turmeric (haldi), saffron (kesar), sandalwood (chandan), raw milk, rose water",
+        focus: "Boosting natural glow, brightening complexion, and traditional beautification."
       },
       {
-        name: "KITCHEN ESSENTIALS",
-        ingredients: "besan (gram flour), yogurt (curd), raw milk, honey, lemon, tomato, potato, cucumber, rice water, ghee",
-        focus: "Simple, effective remedies using common edible ingredients found in every Indian kitchen."
+        name: "DEEP HYDRATION & NOURISHMENT",
+        ingredients: "coconut oil, almond oil, honey, glycerin, vitamin E, fresh cream (malai), banana",
+        focus: "Restoring moisture, repairing skin barrier, and softening texture."
       },
       {
-        name: "FRUIT & FLORAL",
-        ingredients: "rose water, papaya, orange peel, pomegranate, banana, hibiscus, jasmine, marigold, aloe vera",
-        focus: "Fresh, aromatic treatments using fruits and flowers for glow and hydration."
+        name: "CLEAR SKIN & PURIFICATION",
+        ingredients: "neem, tulsi (holy basil), multani mitti (fuller's earth), aloe vera, mint (pudina)",
+        focus: "Fighting acne, reducing oiliness, unclogging pores, and antibacterial care."
       },
       {
-        name: "SPICE & WARMTH",
-        ingredients: "saffron (kesar), cinnamon, clove, cardamom, fenugreek (methi), ginger, black pepper, mustard oil",
-        focus: "Stimulating remedies using warming spices to boost circulation and detoxify."
+        name: "BRIGHTENING & TAN REMOVAL",
+        ingredients: "tomato pulp, potato juice, papaya, orange peel powder, lemon (diluted), curd (yogurt)",
+        focus: "Removing tan, fading dark spots, and evening out skin tone."
       },
       {
-        name: "OILS & NUTS",
-        ingredients: "coconut oil, almond oil, sesame oil, castor oil, walnut, soaked almonds, cashew paste",
-        focus: "Deep nourishment and moisturizing treatments using natural oils and nuts."
+        name: "EXFOLIATION & SMOOTHING",
+        ingredients: "besan (gram flour), rice flour, oatmeal, coffee grounds, sugar (fine), masoor dal powder",
+        focus: "Gentle scrubbing, removing dead skin cells, and polishing skin texture."
       },
       {
-        name: "DETOX & PURIFY",
-        ingredients: "mint (pudina), coriander, curry leaves, green tea, salt, baking soda (minimal), clay, charcoal",
-        focus: "Cleansing and purifying remedies to remove toxins and refresh."
+        name: "SOOTHING & COOLING",
+        ingredients: "cucumber, rose water, aloe vera, watermelon, ice water, chamomile, green tea",
+        focus: "Calming irritation, reducing puffiness, and cooling sun-exposed skin."
       }
     ];
 
@@ -126,9 +126,8 @@ JSON STRUCTURE:
     PREFERRED INGREDIENTS: ${selectedCategory.ingredients}
     
     STRICT RULES:
-    1. Use ONLY ingredients relevant to the '${selectedCategory.name}' theme.
-    2. DO NOT use generic combinations like Honey+Lemon unless they fit the specific theme perfectly.
-    3. Ensure all 4 remedies are distinct from each other.
+    1. **SKIN CARE ONLY**. Do NOT suggest remedies for hair, digestion, weight loss, or general health.
+    2. Use ONLY ingredients relevant to the '${selectedCategory.name}' theme.
   ]
 }
 
